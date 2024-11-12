@@ -48,7 +48,7 @@ app.post('/register', (req, res) => {
 
     // Query untuk memeriksa apakah username sudah ada
     const checkQuery = 'SELECT * FROM users WHERE username = ?';
-    db.query(checkQuery, [username], (err, res) => {
+    db.query(checkQuery, [username], (checkErr, checkResult) => {
         if (checkErr) {
             return res.status(500).json({
                 success: false,
@@ -58,7 +58,7 @@ app.post('/register', (req, res) => {
         }
 
         // Jika username sudah ada
-        if (res.length > 0) {
+        if (checkResult.length > 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Username sudah terdaftar',
@@ -68,8 +68,8 @@ app.post('/register', (req, res) => {
 
         // Jika username belum ada, lanjutkan proses pendaftaran
         const insertQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
-        db.query(insertQuery, [username, passwordHash], (err, res) => {
-            if (err) {
+        db.query(insertQuery, [username, passwordHash], (insertErr, insertResult) => {
+            if (insertErr) {
                 return res.status(500).json({
                     success: false,
                     message: 'Kesalahan server saat mendaftar',
@@ -77,7 +77,7 @@ app.post('/register', (req, res) => {
                 });
             }
 
-            if (res.affectedRows > 0) {
+            if (insertResult.affectedRows > 0) {
                 res.status(201).json({
                     success: true,
                     message: 'Pendaftaran berhasil!',
