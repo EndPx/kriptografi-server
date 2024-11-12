@@ -6,28 +6,11 @@ const crypto = require('crypto-js');
 const fs = require('fs');
 const cors = require('cors');
 const PORT = process.env.PORT;
+const db = require('./db');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-// Konfigurasi koneksi MySQL
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD, // Ganti dengan password MySQL Anda
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    ssl: {
-        rejectUnauthorized: true,
-        ca: fs.readFileSync('ca.pem').toString(),
-    }
-});
-
-db.connect((err) => {
-    if (err) throw err;
-    console.log('Terhubung ke MySQL');
-});
 
 // Endpoint login
 app.post('/login', (req, res) => {
