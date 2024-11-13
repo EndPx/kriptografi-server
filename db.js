@@ -11,9 +11,9 @@ const db = mysql.createConnection({
     ssl: {
         rejectUnauthorized: true,
         // untuk production
-        // ca: process.env.DB_CA_CERT
+        ca: process.env.DB_CA_CERT
         // untuk local
-        ca: fs.readFileSync('ca.pem').toString()
+        // ca: fs.readFileSync('ca.pem').toString()
     }
 });
 
