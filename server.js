@@ -42,7 +42,7 @@ function authenticateToken(req, res, next) {
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) return res.sendStatus(403).json({
             success: false, 
-            message: 'Login Dulu' 
+            message: 'Login Dulu'
         });
         req.user = user;
         next();
@@ -60,7 +60,7 @@ app.post('/login', (req, res) => {
             return res.status(500).json({ success: false, message: 'Kesalahan server' });
         }
         if (result.length > 0) {
-            const token = generateToken({ username });
+            const token = generateToken({ id: user.id, username: user.username });
             res.status(200).json({ success: true, message: 'Login berhasil!', token });
         } else {
             res.status(401).json({ success: false, message: 'Username atau password salah' });
