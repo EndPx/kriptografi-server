@@ -16,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Fungsi untuk menghasilkan token JWT
 function generateToken(user) {
-    return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
 }
 
 function caesarCipher(text, shift) {
@@ -40,7 +40,10 @@ function authenticateToken(req, res, next) {
     });
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) return res.sendStatus(403).json({
+            success: false, 
+            message: 'Login Dulu' 
+        });
         req.user = user;
         next();
     });
