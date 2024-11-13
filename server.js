@@ -6,6 +6,7 @@ const crypto = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const db = require('./db');
+const CryptoJS = require('crypto-js')
 
 const app = express();
 app.use(express.json());
