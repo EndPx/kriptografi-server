@@ -14,11 +14,6 @@ app.use(cors());
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Fungsi untuk menghasilkan token JWT
-function generateToken(user) {
-    return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
-}
-
 function caesarCipher(text, shift) {
     return text.split('').map(char => {
         if (char.match(/[a-z]/i)) {
@@ -33,11 +28,18 @@ function caesarCipher(text, shift) {
 
 // Middleware untuk memeriksa autentikasi JWT
 function authenticateToken(req, res, next) {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ 
-        success: false, 
-        message: 'Token tidak ditemukan' 
-    });
+    const header = req.headers;
+    const authorization = header.authorization;
+    let token;
+    if(authorization !== undefined && authorization.startsWith("Bearer ")){
+        //mengilangkan string "Bearer "
+        token = authorization.substring(7); 
+        //token akan bernilai token
+    }else{
+        const error = new Error("You need to login");
+        error.statusCode = 403;
+        throw error;
+    }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) return res.sendStatus(403).json({
@@ -50,7 +52,7 @@ function authenticateToken(req, res, next) {
 }
 
 // Endpoint login
-app.post('/login', (req, res) => {
+app.post('/login', async(req, res) => {
     const { username, password } = req.body;
     const passwordHash = crypto.SHA256(password).toString();
 
@@ -60,7 +62,12 @@ app.post('/login', (req, res) => {
             return res.status(500).json({ success: false, message: 'Kesalahan server' });
         }
         if (result.length > 0) {
-            const token = generateToken({ id: user.id, username: user.username });
+            const id = result[0].id;
+            const token = jwt.sign({
+                id: id,
+            }, key,{
+                algorithm: "HS256"
+            })
             res.status(200).json({ success: true, message: 'Login berhasil!', token });
         } else {
             res.status(401).json({ success: false, message: 'Username atau password salah' });
@@ -83,11 +90,17 @@ app.post('/register', (req, res) => {
         }
 
         const insertQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
-        db.query(insertQuery, [username, passwordHash], (insertErr) => {
+        db.query(insertQuery, [username, passwordHash], (insertErr, insertResult) => {
             if (insertErr) {
                 return res.status(500).json({ success: false, message: 'Kesalahan server' });
             }
-            res.status(201).json({ success: true, message: 'Pendaftaran berhasil!' });
+            const id = insertResult.insertId;
+            const token = jwt.sign({
+                id: id,
+            }, key,{
+                algorithm: "HS256"
+            })
+            res.status(201).json({ success: true, message: 'Pendaftaran berhasil!', token });
         });
     });
 });
