@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 const PORT = process.env.PORT;
-const JWT_SECRET = process.env.JWT_SECRET;
+const key = process.env.JWT_SECRET;
 
 function caesarCipher(text, shift) {
     return text.split('').map(char => {
@@ -41,7 +41,7 @@ function authenticateToken(req, res, next) {
         throw error;
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, key, (err, user) => {
         if (err) return res.sendStatus(403).json({
             success: false, 
             message: 'Login Dulu'
@@ -149,7 +149,7 @@ app.get('/message', authenticateToken, (req, res) => {
         
         // Dekripsi setiap pesan
         const decryptedMessages = results.map(result => {
-            const bytes = crypto.AES.decrypt(result.message, JWT_SECRET);
+            const bytes = crypto.AES.decrypt(result.message, key);
             return bytes.toString(crypto.enc.Utf8);
         });
 
