@@ -142,11 +142,32 @@ app.post('/message', authenticateToken, (req, res) => {
 
 // Endpoint untuk mengambil pesan yang terenkripsi
 app.get('/message', authenticateToken, (req, res) => {
+    const id_user_to = req.user.id;
+    const getMessageQuery = `
+        SELECT m.text, u.username as receive_username 
+        FROM message m 
+        JOIN users u ON m.id_user_to = u.id 
+        WHERE m.id_user_to = ?
+    `;
+    
+    db.query(getMessageQuery, [id_user_by], (err, results) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Gagal mengambil pesan' });
+        }
+        
+        res.status(200).json({ 
+            success: true, 
+            messages: results 
+        });
+    });
+});
+
+app.get('/history', authenticateToken, (req, res) => {
     const id_user_by = req.user.id;
     const getMessageQuery = `
-        SELECT m.text, m.id_user_by, u.username as sender_username 
+        SELECT m.text, u.username as receive_username 
         FROM message m 
-        JOIN users u ON m.id_user_by = u.id 
+        JOIN users u ON m.id_user_to = u.id 
         WHERE m.id_user_by = ?
     `;
     
@@ -161,6 +182,7 @@ app.get('/message', authenticateToken, (req, res) => {
         });
     });
 });
+
 app.listen(PORT, () => {
     console.log(`Server berjalan pada port ${PORT}`);
 });
