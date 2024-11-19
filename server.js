@@ -14,6 +14,7 @@ app.use(cors());
 const PORT = process.env.PORT;
 const key = process.env.JWT_SECRET;
 
+
 // Middleware untuk memeriksa autentikasi JWT
 function authenticateToken(req, res, next) {
     const header = req.headers;
@@ -42,9 +43,10 @@ function authenticateToken(req, res, next) {
 // Endpoint login
 app.post('/login', async(req, res) => {
     const { username, password } = req.body;
+    const passwordHash = crypto.SHA256(password).toString();
 
     const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-    db.query(query, [username, password], (err, result) => {
+    db.query(query, [username, passwordHash], (err, result) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Kesalahan server' });
         }
@@ -65,6 +67,7 @@ app.post('/login', async(req, res) => {
 // Endpoint register
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
+    const passwordHash = crypto.SHA256(password).toString();
 
     const checkQuery = 'SELECT * FROM users WHERE username = ?';
     db.query(checkQuery, [username], (checkErr, checkResult) => {
@@ -76,7 +79,7 @@ app.post('/register', (req, res) => {
         }
 
         const insertQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
-        db.query(insertQuery, [username, password], (insertErr, insertResult) => {
+        db.query(insertQuery, [username, passwordHash], (insertErr, insertResult) => {
             if (insertErr) {
                 return res.status(500).json({ success: false, message: 'Kesalahan server' });
             }
