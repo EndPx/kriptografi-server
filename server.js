@@ -150,7 +150,7 @@ app.get('/message', authenticateToken, (req, res) => {
         WHERE m.id_user_to = ?
     `;
     
-    db.query(getMessageQuery, [id_user_by], (err, results) => {
+    db.query(getMessageQuery, [id_user_to], (err, results) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Gagal mengambil pesan' });
         }
