@@ -144,9 +144,9 @@ app.post('/message', authenticateToken, (req, res) => {
 app.get('/message', authenticateToken, (req, res) => {
     const id_user_to = req.user.id;
     const getMessageQuery = `
-        SELECT m.text, u.username as receive_username 
+        SELECT m.text, u.username as sender_username 
         FROM message m 
-        JOIN users u ON m.id_user_to = u.id 
+        JOIN users u ON m.id_user_by = u.id 
         WHERE m.id_user_to = ?
     `;
     
