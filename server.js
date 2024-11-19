@@ -108,11 +108,8 @@ app.post('/register', (req, res) => {
 
 // Endpoint untuk mengirim pesan
 app.post('/message', authenticateToken, (req, res) => {
-    const { text, username_to, aesKey, shiftCaesar } = req.body;
+    const { text, username_to } = req.body;
 
-    // Enkripsi pesan menggunakan AES dan Caesar Cipher
-    let textEncrypted = CryptoJS.AES.encrypt(text, aesKey).toString();
-    textEncrypted = caesarCipher(textEncrypted, shiftCaesar);
 
     const id_user_by = req.user.id;
 
@@ -129,7 +126,7 @@ app.post('/message', authenticateToken, (req, res) => {
 
         // Menyimpan pesan ke dalam tabel
         const insertMessageQuery = 'INSERT INTO message (text, id_user_by, id_user_to) VALUES (?, ?, ?)';
-        db.query(insertMessageQuery, [textEncrypted, id_user_by, id_user_to], (err) => {
+        db.query(insertMessageQuery, [text, id_user_by, id_user_to], (err) => {
             if (err) {
                 return res.status(500).json({ success: false, message: 'Kesalahan server saat menyimpan pesan' });
             }
