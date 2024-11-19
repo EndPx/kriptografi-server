@@ -142,22 +142,25 @@ app.post('/message', authenticateToken, (req, res) => {
 
 // Endpoint untuk mengambil pesan yang terenkripsi
 app.get('/message', authenticateToken, (req, res) => {
-    const getMessageQuery = 'SELECT message FROM messages WHERE username = ?';
-    db.query(getMessageQuery, [req.user.username], (err, results) => {
+    const id_user_by = req.user.id;
+    const getMessageQuery = `
+        SELECT m.text, m.id_user_by, u.username as sender_username 
+        FROM message m 
+        JOIN users u ON m.id_user_by = u.id 
+        WHERE m.id_user_by = ?
+    `;
+    
+    db.query(getMessageQuery, [id_user_by], (err, results) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Gagal mengambil pesan' });
         }
         
-        // Dekripsi setiap pesan
-        const decryptedMessages = results.map(result => {
-            const bytes = crypto.AES.decrypt(result.message, key);
-            return bytes.toString(crypto.enc.Utf8);
+        res.status(200).json({ 
+            success: true, 
+            messages: results 
         });
-
-        res.status(200).json({ success: true, messages: decryptedMessages });
     });
 });
-
 app.listen(PORT, () => {
     console.log(`Server berjalan pada port ${PORT}`);
 });
