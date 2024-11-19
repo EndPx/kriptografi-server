@@ -6,7 +6,6 @@ const crypto = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const db = require('./db');
-const CryptoJS = require('crypto-js')
 
 const app = express();
 app.use(express.json());
@@ -14,18 +13,6 @@ app.use(cors());
 
 const PORT = process.env.PORT;
 const key = process.env.JWT_SECRET;
-
-function caesarCipher(text, shift) {
-    return text.split('').map(char => {
-        if (char.match(/[a-z]/i)) {
-            const code = char.charCodeAt(0);
-            const isUpperCase = code >= 65 && code <= 90;
-            const base = isUpperCase ? 65 : 97;
-            return String.fromCharCode(((code - base + shift + 26) % 26) + base);
-        }
-        return char;
-    }).join('');
-}
 
 // Middleware untuk memeriksa autentikasi JWT
 function authenticateToken(req, res, next) {
@@ -55,10 +42,9 @@ function authenticateToken(req, res, next) {
 // Endpoint login
 app.post('/login', async(req, res) => {
     const { username, password } = req.body;
-    const passwordHash = crypto.SHA256(password).toString();
 
     const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-    db.query(query, [username, passwordHash], (err, result) => {
+    db.query(query, [username, password], (err, result) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Kesalahan server' });
         }
@@ -79,7 +65,6 @@ app.post('/login', async(req, res) => {
 // Endpoint register
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
-    const passwordHash = crypto.SHA256(password).toString();
 
     const checkQuery = 'SELECT * FROM users WHERE username = ?';
     db.query(checkQuery, [username], (checkErr, checkResult) => {
@@ -91,7 +76,7 @@ app.post('/register', (req, res) => {
         }
 
         const insertQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
-        db.query(insertQuery, [username, passwordHash], (insertErr, insertResult) => {
+        db.query(insertQuery, [username, password], (insertErr, insertResult) => {
             if (insertErr) {
                 return res.status(500).json({ success: false, message: 'Kesalahan server' });
             }
